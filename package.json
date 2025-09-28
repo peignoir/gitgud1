@@ -1,0 +1,32 @@
+{
+  "name": "gitgud-ai-console",
+  "version": "1.0.0",
+  "description": "Clean terminal-based AI chat with OpenAI and Mastra",
+  "private": true,
+  "scripts": {
+    "console": "tsx src/console/index.ts",
+    "app": "cd mobile-app && npm run dev",
+    "dev": "tsx src/console/index.ts",
+    "start": "node -e \"console.log('Choose mode:'); console.log('npm run console - Terminal mode'); console.log('npm run app - Mobile app mode');\""
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.19",
+    "@ai-sdk/google": "^2.0.17",
+    "@ai-sdk/openai": "^2.0.35",
+    "@mastra/core": "^0.18.0",
+    "ai": "^3.4.33",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5",
+    "inquirer": "^9.3.7",
+    "openai": "^4.104.0",
+    "ora": "^8.1.1",
+    "socket.io": "^4.8.1",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
