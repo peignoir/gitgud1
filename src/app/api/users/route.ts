@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
         house_decision,
         house_reasoning,
         chat_history,
+        memory_notes,
+        extracted_info,
         last_login_at
       ) VALUES (
         ${email},
@@ -76,6 +78,8 @@ export async function POST(request: NextRequest) {
         ${body.houseDecision || null},
         ${body.houseReasoning || null},
         ${body.chatHistory ? JSON.stringify(body.chatHistory) : '[]'},
+        ${body.memoryNotes || null},
+        ${body.extractedInfo ? JSON.stringify(body.extractedInfo) : null},
         NOW()
       )
       ON CONFLICT (email) DO UPDATE SET
@@ -94,6 +98,10 @@ export async function POST(request: NextRequest) {
         house_decision = COALESCE(EXCLUDED.house_decision, gitgud_users.house_decision),
         house_reasoning = COALESCE(EXCLUDED.house_reasoning, gitgud_users.house_reasoning),
         chat_history = COALESCE(EXCLUDED.chat_history, gitgud_users.chat_history),
+        memory_notes = CASE WHEN EXCLUDED.memory_notes IS NOT NULL THEN
+          COALESCE(gitgud_users.memory_notes || E'\n' || EXCLUDED.memory_notes, EXCLUDED.memory_notes)
+          ELSE gitgud_users.memory_notes END,
+        extracted_info = COALESCE(EXCLUDED.extracted_info, gitgud_users.extracted_info),
         last_login_at = NOW()
       RETURNING *
     `;
@@ -136,7 +144,7 @@ export async function GET(request: NextRequest) {
         SELECT
           id, email, name, bio, linkedin_url, archetype,
           startup_name, house_decision, challenge_completed_at,
-          created_at, last_login_at
+          created_at, last_login_at, is_rockstar, rockstar_reason, rockstar_confidence
         FROM gitgud_users
         ORDER BY created_at DESC
       `;

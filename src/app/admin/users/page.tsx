@@ -16,6 +16,9 @@ interface User {
   challenge_completed_at: string;
   created_at: string;
   last_login_at: string;
+  is_rockstar?: boolean;
+  rockstar_reason?: string;
+  rockstar_confidence?: number;
 }
 
 const archetypeColors = {
@@ -41,6 +44,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'score' | 'date'>('score');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [runningRockstarCheck, setRunningRockstarCheck] = useState(false);
 
   // Check admin access
   useEffect(() => {
@@ -167,12 +171,38 @@ export default function AdminUsersPage() {
               <h1 className="text-3xl font-bold text-gray-900">Founder Bios</h1>
               <p className="text-gray-600 mt-1">Admin Dashboard - {users.length} founders</p>
             </div>
-            <button
-              onClick={() => router.push('/founder-journey')}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
-            >
-              ← Back to Journey
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  setRunningRockstarCheck(true);
+                  try {
+                    const response = await fetch('/api/rockstar-check', {
+                      method: 'PUT',
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                      alert(`✅ Rockstar check complete!\n${data.famousCount} famous founders found out of ${data.totalChecked}`);
+                      await loadUsers(); // Reload to show stars
+                    }
+                  } catch (error) {
+                    console.error('Rockstar check failed:', error);
+                    alert('❌ Rockstar check failed');
+                  } finally {
+                    setRunningRockstarCheck(false);
+                  }
+                }}
+                disabled={runningRockstarCheck}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                {runningRockstarCheck ? '⏳ Checking...' : '⭐ Run Rockstar Check'}
+              </button>
+              <button
+                onClick={() => router.push('/founder-journey')}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+              >
+                ← Back to Journey
+              </button>
+            </div>
           </div>
 
           {/* Filters */}
@@ -265,8 +295,16 @@ export default function AdminUsersPage() {
                       {user.name?.[0] || user.email?.[0] || '?'}
                     </div>
                   </div>
-                  {/* Star Badge for scores above 50 */}
-                  {showStar(calculateDemoScore(user)) && (
+                  {/* Red Star Badge for Rockstars (Famous Founders) */}
+                  {user.is_rockstar && (
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-gradient-to-r from-red-500 to-pink-500 px-3 py-1.5 rounded-full shadow-lg border-2 border-white">
+                        <span className="text-white text-2xl" title={user.rockstar_reason || 'Famous founder'}>⭐</span>
+                      </div>
+                    </div>
+                  )}
+                  {/* Star Badge for high demo scores (if not rockstar) */}
+                  {!user.is_rockstar && showStar(calculateDemoScore(user)) && (
                     <div className="absolute top-4 right-4">
                       <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-2xl shadow-lg">
                         ⭐

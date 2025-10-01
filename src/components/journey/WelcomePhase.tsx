@@ -9,6 +9,8 @@ interface WelcomePhaseProps {
 export function WelcomePhase({ onNext }: WelcomePhaseProps) {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [urlError, setUrlError] = useState('');
+  const [resumeText, setResumeText] = useState('');
+  const [showResumeInput, setShowResumeInput] = useState(false);
 
   const validateLinkedInUrl = (url: string): boolean => {
     if (!url) return true; // Empty is OK (optional)
@@ -40,7 +42,11 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
     if (linkedinUrl && !validateLinkedInUrl(linkedinUrl)) {
       return; // Don't proceed if URL is invalid
     }
-    onNext({ linkedinUrl, startedAt: new Date().toISOString() });
+    onNext({
+      linkedinUrl,
+      resumeText: resumeText.trim(),
+      startedAt: new Date().toISOString()
+    });
   };
 
   return (
@@ -187,6 +193,65 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
         </p>
       </div>
 
+      {/* Resume/Bio Option */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-8 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-gray-900">📄 Or Share Your Resume/Bio</h3>
+          <button
+            onClick={() => setShowResumeInput(!showResumeInput)}
+            className="text-green-600 hover:text-green-700 font-medium text-sm"
+          >
+            {showResumeInput ? '▼ Hide' : '▶ Show'}
+          </button>
+        </div>
+
+        {showResumeInput && (
+          <div className="space-y-4">
+            <p className="text-gray-700 mb-4">
+              If your LinkedIn is private or you don't have one, paste your resume or bio text here.
+              I'll use this to craft your founder profile.
+            </p>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h4 className="font-semibold text-blue-900 mb-2">📝 How to get your LinkedIn data:</h4>
+              <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+                <li>Go to your LinkedIn profile</li>
+                <li>Click "More" → "Save to PDF"</li>
+                <li>Open the PDF and copy all the text</li>
+                <li>Paste it below</li>
+              </ol>
+              <p className="text-xs text-blue-700 mt-3">
+                💡 Or just paste your resume, bio, or any text about your background, companies, and achievements!
+              </p>
+            </div>
+
+            <textarea
+              value={resumeText}
+              onChange={(e) => setResumeText(e.target.value)}
+              placeholder="Paste your resume, LinkedIn export, or bio here...
+
+Example:
+John Smith
+Serial Entrepreneur | Ex-Google
+
+Currently building Acme Corp (2023-present), a SaaS platform with 10K users...
+
+Previously:
+- Co-founded TechStartup (2018-2022), acquired by BigCo for $5M
+- Product Manager at Google (2015-2018)
+- Computer Science @ MIT (2011-2015)"
+              className="w-full px-4 py-3 border-2 border-green-300 focus:border-green-500 rounded-lg focus:outline-none text-sm min-h-[200px] text-gray-900 placeholder-gray-500"
+            />
+
+            {resumeText && (
+              <p className="text-sm text-green-600 font-medium">
+                ✅ {resumeText.split('\n').length} lines | {resumeText.length} characters
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* CTA Button */}
       <div className="text-center">
         <button
@@ -196,9 +261,11 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
           🚀 Let's Git Gud Together!
         </button>
         <p className="text-gray-600 mt-4 text-sm">
-          {linkedinUrl 
-            ? '✨ Perfect! I\'ll research your background and we\'ll get started' 
-            : '👍 No LinkedIn? No problem—we\'ll figure it out together'
+          {linkedinUrl
+            ? '✨ Perfect! I\'ll research your LinkedIn and we\'ll get started'
+            : resumeText
+            ? '✨ Got your resume! I\'ll analyze it and create your profile'
+            : '👍 No problem—we\'ll figure it out together'
           }
         </p>
       </div>

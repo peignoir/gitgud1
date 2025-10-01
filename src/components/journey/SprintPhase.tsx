@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { extractUserInfo, formatUserInfoForMemory } from '@/lib/utils/extract-user-info';
 
 interface SprintPhaseProps {
   data: Record<string, any>;
@@ -104,6 +105,28 @@ export function SprintPhase({ data, onUpdate }: SprintPhaseProps) {
   const handleWeeklyCheckIn = async () => {
     if (!userUpdate.trim()) return;
 
+    // Extract user info from their update
+    const extractedInfo = extractUserInfo(userUpdate);
+    if (extractedInfo) {
+      const memoryText = formatUserInfoForMemory(extractedInfo);
+      console.log('📝 [User Info] Extracted from chat:', memoryText);
+
+      // Save to database via users API
+      try {
+        await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            extractedInfo, // Raw structured data
+            memoryNotes: memoryText, // Formatted for memory
+          }),
+        });
+        console.log('✅ [User Info] Saved extracted info to database');
+      } catch (error) {
+        console.error('❌ [User Info] Failed to save:', error);
+      }
+    }
+
     const response = await fetch('/api/founder-journey/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -114,6 +137,7 @@ export function SprintPhase({ data, onUpdate }: SprintPhaseProps) {
           sprintAction: 'checkin',
           currentWeek,
           userUpdate,
+          extractedUserInfo: extractedInfo, // Pass to Mastra for context
         },
       }),
     });

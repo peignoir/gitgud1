@@ -15,6 +15,8 @@ interface User {
   challenge_completed_at: string;
   created_at: string;
   last_login_at: string;
+  is_rockstar?: boolean;
+  rockstar_reason?: string;
 }
 
 const archetypeColors = {
@@ -165,6 +167,14 @@ export default function PublicDashboardPage() {
                       {user.name?.[0] || user.email?.[0] || '?'}
                     </div>
                   </div>
+                  {/* Red Star Badge for Rockstars */}
+                  {user.is_rockstar && (
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-gradient-to-r from-red-500 to-pink-500 px-3 py-1.5 rounded-full shadow-lg border-2 border-white">
+                        <span className="text-white text-2xl" title={user.rockstar_reason || 'Famous founder'}>⭐</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Body */}

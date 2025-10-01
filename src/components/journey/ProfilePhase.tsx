@@ -119,6 +119,7 @@ export function ProfilePhase({ data, onNext }: ProfilePhaseProps) {
             researchSummary: data.research?.summary,
             linkedinUrl: data.research?.linkedinUrl || data.linkedinUrl,
             linkedinData: linkedinData || undefined, // User-provided LinkedIn text
+            resumeText: data.resumeText || undefined, // User-provided resume/bio text
           },
         }),
       });
