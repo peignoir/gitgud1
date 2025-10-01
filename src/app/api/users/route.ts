@@ -123,7 +123,35 @@ export async function GET(request: NextRequest) {
     }
 
     const email = session.user.email;
+    const { searchParams } = new URL(request.url);
+    const getAll = searchParams.get('all') === 'true';
 
+    // Admin only: Get all users
+    if (getAll && email === 'franck@recorp.co') {
+      console.log('📖 [Users API] Loading all users (admin)');
+
+      const sql = getDb();
+
+      const result = await sql`
+        SELECT
+          id, email, name, bio, linkedin_url, archetype,
+          startup_name, house_decision, challenge_completed_at,
+          created_at, last_login_at
+        FROM gitgud_users
+        ORDER BY created_at DESC
+      `;
+
+      await sql.end();
+
+      console.log(`✅ [Users API] Loaded ${result.length} users`);
+
+      return NextResponse.json({
+        success: true,
+        users: result,
+      });
+    }
+
+    // Regular user: Get own data
     console.log('📖 [Users API] Loading user data:', { email });
 
     const sql = getDb();
