@@ -85,12 +85,7 @@ export function TopNavigation({ onNavigate }: TopNavigationProps) {
                 >
                   Sign in with Google
                 </button>
-                <button
-                  onClick={() => signIn('apple')}
-                  className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                  Sign in with Apple
-                </button>
+                
               </div>
             ) : (
               <div className="relative">
