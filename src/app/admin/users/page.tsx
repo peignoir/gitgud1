@@ -120,6 +120,15 @@ export default function AdminUsersPage() {
     return '⏳ Early Stage';
   };
 
+  const getStarsForScore = (score: number): string => {
+    if (score < 50) return '';
+    if (score >= 90) return '⭐⭐⭐⭐⭐';
+    if (score >= 80) return '⭐⭐⭐⭐';
+    if (score >= 70) return '⭐⭐⭐';
+    if (score >= 60) return '⭐⭐';
+    return '⭐';
+  };
+
   const filteredUsers = users
     .filter(user => {
       const matchesFilter = filter === 'all' || user.archetype === filter;
@@ -261,12 +270,14 @@ export default function AdminUsersPage() {
                       {user.name?.[0] || user.email?.[0] || '?'}
                     </div>
                   </div>
-                  {/* Demo Score Badge */}
-                  <div className="absolute top-4 right-4">
-                    <div className={`${getDemoScoreColor(calculateDemoScore(user))} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
-                      {calculateDemoScore(user)} / 100
+                  {/* Stars Badge for scores above 50 */}
+                  {getStarsForScore(calculateDemoScore(user)) && (
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-white/90 backdrop-blur-sm text-yellow-500 px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                        {getStarsForScore(calculateDemoScore(user))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Card Body */}
