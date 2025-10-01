@@ -117,8 +117,8 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
               });
               const startTime = Date.now();
               
-              // Call generateVNext with explicit message array and memory config
-              const response = await (agent as any).generateVNext(
+              // Use regular stream() method for AI SDK v4 models
+              const streamResult = await agent.stream(
                 [{ role: 'user', content: prompt }],
                 {
                   memory: {
@@ -128,58 +128,23 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
                   maxSteps: 5, // Limit to 5 steps max (3 searches + 2 buffer) for speed
                 }
               );
-              
-              console.log(`📚 [${agentName}] Generate returned, checking response...`);
-              
-              const duration = Date.now() - startTime;
-              console.log(`📚 [${agentName}] agent.generate() completed in ${duration}ms`);
-              
-              console.log(`📚 [${agentName}] Raw response object:`, {
-                hasText: !!response.text,
-                textLength: response.text?.length || 0,
-                hasToolCalls: !!response.toolCalls,
-                toolCallsCount: response.toolCalls?.length || 0,
-                responseKeys: Object.keys(response),
-                steps: response.steps?.length || 0,
-                finishReason: response.finishReason,
-                fullResponseObject: JSON.stringify(response).substring(0, 500)
-              });
-              
-              fullResponse = response.text || '';
-              
-              if (!fullResponse) {
-                console.error(`❌ [${agentName}] EMPTY TEXT! Full response object:`, JSON.stringify(response, null, 2));
-                console.error(`❌ [${agentName}] Steps:`, response.steps);
-                console.error(`❌ [${agentName}] Tool calls:`, response.toolCalls);
-                
-                // Try to get text from steps if main text is empty
-                if (response.steps && response.steps.length > 0) {
-                  const lastStep = response.steps[response.steps.length - 1];
-                  console.log(`🔍 [${agentName}] Checking last step:`, lastStep);
-                  if (lastStep && lastStep.text) {
-                    fullResponse = lastStep.text;
-                    console.log(`✅ [${agentName}] Recovered text from last step: ${fullResponse.length} chars`);
-                  }
-                }
-              } else {
-                console.log(`✅ [${agentName}] Generated response: ${fullResponse.length} chars`);
-                console.log(`✅ [${agentName}] Response preview: "${fullResponse.substring(0, 300)}..."`);
-              }
-            } catch (genError) {
-              console.error(`❌ [${agentName}] Generate error:`, genError);
-              throw genError;
-            }
-            
-            // Stream the full response in chunks (no delay - instant)
-            if (fullResponse) {
-              const chunkSize = 100; // larger chunks, no delay
-              for (let i = 0; i < fullResponse.length; i += chunkSize) {
-                const chunk = fullResponse.slice(i, i + chunkSize);
+
+              // Collect the streamed response
+              const response = { text: '', toolCalls: [], steps: [], finishReason: '' };
+              for await (const chunk of streamResult.textStream) {
+                response.text += chunk;
+                fullResponse += chunk;
+                // Send chunk immediately
                 controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`)
+                  encoder.encode(`data: ${JSON.stringify({ type: 'content', content: chunk })}\n\n`)
                 );
               }
-              console.log(`📤 [${agentName}] Streamed ${Math.ceil(fullResponse.length / chunkSize)} chunks to client`);
+              
+              const duration = Date.now() - startTime;
+              console.log(`✅ [${agentName}] Streaming completed in ${duration}ms, total length: ${fullResponse.length} chars`);
+            } catch (genError) {
+              console.error(`❌ [${agentName}] Stream error:`, genError);
+              throw genError;
             }
           } else {
             // Other agents without tools can use real streaming
