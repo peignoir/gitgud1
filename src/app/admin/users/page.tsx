@@ -120,13 +120,8 @@ export default function AdminUsersPage() {
     return '⏳ Early Stage';
   };
 
-  const getStarsForScore = (score: number): string => {
-    if (score < 50) return '';
-    if (score >= 90) return '⭐⭐⭐⭐⭐';
-    if (score >= 80) return '⭐⭐⭐⭐';
-    if (score >= 70) return '⭐⭐⭐';
-    if (score >= 60) return '⭐⭐';
-    return '⭐';
+  const showStar = (score: number): boolean => {
+    return score >= 50;
   };
 
   const filteredUsers = users
@@ -270,11 +265,11 @@ export default function AdminUsersPage() {
                       {user.name?.[0] || user.email?.[0] || '?'}
                     </div>
                   </div>
-                  {/* Stars Badge for scores above 50 */}
-                  {getStarsForScore(calculateDemoScore(user)) && (
+                  {/* Star Badge for scores above 50 */}
+                  {showStar(calculateDemoScore(user)) && (
                     <div className="absolute top-4 right-4">
-                      <div className="bg-white/90 backdrop-blur-sm text-yellow-500 px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                        {getStarsForScore(calculateDemoScore(user))}
+                      <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-2xl shadow-lg">
+                        ⭐
                       </div>
                     </div>
                   )}
@@ -321,6 +316,21 @@ export default function AdminUsersPage() {
                       <p className="text-sm font-semibold text-blue-600">
                         🚀 {user.startup_name}
                       </p>
+                    </div>
+                  )}
+
+                  {/* LinkedIn */}
+                  {user.linkedin_url && (
+                    <div className="mb-3">
+                      <a
+                        href={user.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-blue-600 hover:text-blue-700 underline flex items-center gap-1"
+                      >
+                        💼 LinkedIn Profile →
+                      </a>
                     </div>
                   )}
 
