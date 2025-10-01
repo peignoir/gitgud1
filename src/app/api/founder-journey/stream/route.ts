@@ -117,8 +117,8 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
               });
               const startTime = Date.now();
               
-              // Call generate with explicit message array and memory config
-              const response = await agent.generate(
+              // Call generateVNext with explicit message array and memory config
+              const response = await (agent as any).generateVNext(
                 [{ role: 'user', content: prompt }],
                 {
                   memory: {
