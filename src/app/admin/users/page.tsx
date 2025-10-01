@@ -39,6 +39,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'score' | 'date'>('score');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Check admin access
@@ -68,15 +69,74 @@ export default function AdminUsersPage() {
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesFilter = filter === 'all' || user.archetype === filter;
-    const matchesSearch = !search ||
-      user.name?.toLowerCase().includes(search.toLowerCase()) ||
-      user.email?.toLowerCase().includes(search.toLowerCase()) ||
-      user.bio?.toLowerCase().includes(search.toLowerCase()) ||
-      user.startup_name?.toLowerCase().includes(search.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  // Calculate Demo Score (0-100)
+  const calculateDemoScore = (user: User): number => {
+    let score = 0;
+
+    // Has bio (20 points)
+    if (user.bio && user.bio.length > 100) score += 20;
+    else if (user.bio) score += 10;
+
+    // Has archetype (10 points)
+    if (user.archetype) score += 10;
+
+    // Has startup name (15 points)
+    if (user.startup_name) score += 15;
+
+    // Completed challenge (30 points)
+    if (user.challenge_completed_at) score += 30;
+
+    // Bio quality - mentions specific companies/achievements (15 points)
+    if (user.bio) {
+      const hasCompanies = /\b(founded|co-founded|built|created|launched)\b/i.test(user.bio);
+      const hasNumbers = /\d+[kKmM]?\+?\s*(users|customers|revenue|funding|exit)/i.test(user.bio);
+      const hasYears = /\(?\d{4}\)?/g.test(user.bio);
+      if (hasCompanies) score += 5;
+      if (hasNumbers) score += 5;
+      if (hasYears) score += 5;
+    }
+
+    // Active recently (10 points)
+    if (user.last_login_at) {
+      const daysSinceLogin = (Date.now() - new Date(user.last_login_at).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceLogin < 1) score += 10;
+      else if (daysSinceLogin < 7) score += 5;
+    }
+
+    return Math.min(score, 100);
+  };
+
+  const getDemoScoreColor = (score: number): string => {
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-blue-500';
+    if (score >= 40) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  const getDemoScoreLabel = (score: number): string => {
+    if (score >= 80) return '🔥 Demo Ready';
+    if (score >= 60) return '✅ Good Potential';
+    if (score >= 40) return '⚡ Needs Work';
+    return '⏳ Early Stage';
+  };
+
+  const filteredUsers = users
+    .filter(user => {
+      const matchesFilter = filter === 'all' || user.archetype === filter;
+      const matchesSearch = !search ||
+        user.name?.toLowerCase().includes(search.toLowerCase()) ||
+        user.email?.toLowerCase().includes(search.toLowerCase()) ||
+        user.bio?.toLowerCase().includes(search.toLowerCase()) ||
+        user.startup_name?.toLowerCase().includes(search.toLowerCase());
+      return matchesFilter && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'score') {
+        return calculateDemoScore(b) - calculateDemoScore(a); // High to low
+      } else {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // Newest first
+      }
+    });
 
   if (loading) {
     return (
@@ -148,6 +208,31 @@ export default function AdminUsersPage() {
               ))}
             </div>
           </div>
+
+          {/* Sort Options */}
+          <div className="flex gap-2 mt-2">
+            <span className="text-sm text-gray-600 flex items-center">Sort by:</span>
+            <button
+              onClick={() => setSortBy('score')}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                sortBy === 'score'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              🎯 Demo Score
+            </button>
+            <button
+              onClick={() => setSortBy('date')}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                sortBy === 'date'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              📅 Newest First
+            </button>
+          </div>
         </div>
       </div>
 
@@ -176,6 +261,12 @@ export default function AdminUsersPage() {
                       {user.name?.[0] || user.email?.[0] || '?'}
                     </div>
                   </div>
+                  {/* Demo Score Badge */}
+                  <div className="absolute top-4 right-4">
+                    <div className={`${getDemoScoreColor(calculateDemoScore(user))} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
+                      {calculateDemoScore(user)} / 100
+                    </div>
+                  </div>
                 </div>
 
                 {/* Card Body */}
@@ -186,6 +277,13 @@ export default function AdminUsersPage() {
                         {user.name || user.email}
                       </h3>
                       <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Demo Score Status */}
+                  <div className="mb-3">
+                    <div className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold ${getDemoScoreColor(calculateDemoScore(user))} text-white`}>
+                      {getDemoScoreLabel(calculateDemoScore(user))}
                     </div>
                   </div>
 
