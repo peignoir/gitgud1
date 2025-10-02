@@ -28,6 +28,7 @@ interface ChallengeState {
   // Submission state
   startupName: string;
   videoUrl: string;
+  websiteUrl: string; // NEW: Website/landing page URL
   fiveLiner: string;
   codeUrl: string;
 
@@ -46,6 +47,7 @@ const INITIAL_STATE: ChallengeState = {
   messages: [],
   startupName: '',
   videoUrl: '',
+  websiteUrl: '',
   fiveLiner: '',
   codeUrl: '',
   isAssessmentPhase: false,
@@ -55,6 +57,22 @@ const INITIAL_STATE: ChallengeState = {
 };
 
 const STORAGE_KEY = 'challenge-state-v2';
+
+// Video URL validation - check if URL is actually a video platform
+function isVideoUrl(url: string): boolean {
+  if (!url) return false;
+  const videoPatterns = [
+    /youtube\.com\/watch/i,
+    /youtu\.be\//i,
+    /vimeo\.com\//i,
+    /loom\.com\//i,
+    /drive\.google\.com.*\/file/i,
+    /dropbox\.com.*\.mp4/i,
+    /streamable\.com\//i,
+    /wistia\.com\//i,
+  ];
+  return videoPatterns.some(pattern => pattern.test(url));
+}
 
 export function ChallengePhaseV2({ data, onNext, isAdmin = false }: ChallengePhaseProps) {
   const [state, setState] = useState<ChallengeState>(INITIAL_STATE);
@@ -466,6 +484,18 @@ export function ChallengePhaseV2({ data, onNext, isAdmin = false }: ChallengePha
       return;
     }
 
+    // Validate video URL
+    if (!isVideoUrl(state.videoUrl)) {
+      const confirmSubmit = confirm(
+        '⚠️ Video URL Warning\n\n' +
+        'This doesn\'t look like a video link (YouTube, Loom, Vimeo, etc.).\n\n' +
+        'People often put their website URL here by mistake.\n\n' +
+        'If this is your website, use the "Website URL" field instead.\n\n' +
+        'Submit anyway?'
+      );
+      if (!confirmSubmit) return;
+    }
+
     const timeSpent = (60 * 60) - state.timeRemaining;
     const completedAt = new Date().toISOString();
 
@@ -479,6 +509,7 @@ export function ChallengePhaseV2({ data, onNext, isAdmin = false }: ChallengePha
           challengeCompletedAt: completedAt,
           challengeDurationSeconds: timeSpent,
           videoUrl: state.videoUrl,
+          websiteUrl: state.websiteUrl || null,
           fiveLiner: state.fiveLiner,
           codeUrl: state.codeUrl,
           chatHistory: state.messages,
@@ -495,6 +526,7 @@ export function ChallengePhaseV2({ data, onNext, isAdmin = false }: ChallengePha
     onNext({
       artifacts: {
         videoUrl: state.videoUrl,
+        websiteUrl: state.websiteUrl,
         fiveLiner: state.fiveLiner,
         codeUrl: state.codeUrl,
         timeSpent,
@@ -517,6 +549,7 @@ export function ChallengePhaseV2({ data, onNext, isAdmin = false }: ChallengePha
           challengeCompletedAt: completedAt,
           challengeDurationSeconds: timeSpent,
           videoUrl: state.videoUrl || null,
+          websiteUrl: state.websiteUrl || null,
           fiveLiner: state.fiveLiner || null,
           codeUrl: state.codeUrl || null,
           houseDecision: state.houseDecision,
@@ -777,15 +810,28 @@ export function ChallengePhaseV2({ data, onNext, isAdmin = false }: ChallengePha
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-900">Video URL *</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Video URL * (demo video)</label>
                   <input
                     type="url"
                     value={state.videoUrl}
                     onChange={(e) => setState(prev => ({ ...prev, videoUrl: e.target.value }))}
-                    placeholder="https://..."
+                    placeholder="https://youtube.com/... or https://loom.com/..."
                     disabled={state.submissionTimeRemaining === 0 && !state.assessmentComplete}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-500"
                   />
+                  <p className="text-xs text-gray-500 mt-1">YouTube, Loom, Vimeo, etc.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Website URL (optional)</label>
+                  <input
+                    type="url"
+                    value={state.websiteUrl}
+                    onChange={(e) => setState(prev => ({ ...prev, websiteUrl: e.target.value }))}
+                    placeholder="https://yourstartup.com"
+                    disabled={state.submissionTimeRemaining === 0 && !state.assessmentComplete}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Your landing page or live demo</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">5-Liner *</label>

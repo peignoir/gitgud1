@@ -17,6 +17,7 @@ interface User {
   last_login_at: string;
   is_rockstar?: boolean;
   rockstar_reason?: string;
+  website_url?: string;
 }
 
 const archetypeColors = {
@@ -216,9 +217,20 @@ export default function PublicDashboardPage() {
                     </div>
                   )}
 
-                  {/* LinkedIn */}
-                  {user.linkedin_url && (
-                    <div className="mb-3">
+                  {/* Links */}
+                  <div className="mb-3 space-y-2">
+                    {user.website_url && (
+                      <a
+                        href={user.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-blue-600 hover:text-blue-700 underline flex items-center gap-1"
+                      >
+                        🌐 {user.website_url.replace(/^https?:\/\//, '').split('/')[0]} →
+                      </a>
+                    )}
+                    {user.linkedin_url && (
                       <a
                         href={user.linkedin_url}
                         target="_blank"
@@ -228,8 +240,8 @@ export default function PublicDashboardPage() {
                       >
                         💼 LinkedIn Profile →
                       </a>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   {/* Bio Preview */}
                   <p className="text-sm text-gray-700 line-clamp-3 mb-4">
@@ -305,18 +317,38 @@ export default function PublicDashboardPage() {
                 </div>
               </div>
 
-              {/* LinkedIn */}
-              {selectedUser.linkedin_url && (
+              {/* Links */}
+              {(selectedUser.website_url || selectedUser.linkedin_url) && (
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">LinkedIn</h3>
-                  <a
-                    href={selectedUser.linkedin_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700 underline"
-                  >
-                    {selectedUser.linkedin_url}
-                  </a>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Links</h3>
+                  <div className="space-y-2">
+                    {selectedUser.website_url && (
+                      <div>
+                        <span className="text-sm text-gray-600">Website:</span>
+                        <a
+                          href={selectedUser.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-blue-600 hover:text-blue-700 underline"
+                        >
+                          {selectedUser.website_url}
+                        </a>
+                      </div>
+                    )}
+                    {selectedUser.linkedin_url && (
+                      <div>
+                        <span className="text-sm text-gray-600">LinkedIn:</span>
+                        <a
+                          href={selectedUser.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-blue-600 hover:text-blue-700 underline"
+                        >
+                          {selectedUser.linkedin_url}
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
