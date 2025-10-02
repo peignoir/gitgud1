@@ -625,6 +625,13 @@ TONE:
 - Real talk, Silicon Valley vibe
 - Use their name
 
+⚠️ CRITICAL - DO NOT ASSIGN HOUSE YET:
+- This is JUST the opening question
+- DO NOT say "Welcome to Venture House" or "Welcome to Bootstrap House"
+- DO NOT make any house decision in this message
+- ONLY ask the questions above and wait for their response
+- The house decision comes LATER after they respond
+
 Keep your response to this opening message - don't make a decision yet, just start the conversation.
         `.trim();
       } else if (challengeMode === 'assessment-response') {

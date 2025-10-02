@@ -28,6 +28,7 @@ export default function FounderJourneyPage() {
     loading: true,
   });
   const [resetKey, setResetKey] = useState(0); // Increment to force re-mount of all components
+  const [isResetting, setIsResetting] = useState(false); // Prevent double-click
 
   // Load current journey state
   useEffect(() => {
@@ -124,9 +125,16 @@ export default function FounderJourneyPage() {
   };
 
   const handleReset = () => {
+    // Prevent double-click
+    if (isResetting) {
+      console.log('⚠️ Reset already in progress, ignoring...');
+      return;
+    }
+
     const confirmed = confirm('🚨 Reset all journey state and start fresh?\n\nThis will:\n• Clear all localStorage\n• Clear Mastra memory\n• Delete chat history\n• Reset timers\n\nClick OK to continue.');
 
     if (confirmed) {
+      setIsResetting(true); // Lock to prevent double-click
       console.log('🗑️ Reset confirmed, redirecting to cleanup...');
       // Redirect immediately to cleanup page
       window.location.replace('/clear-storage');
@@ -196,10 +204,11 @@ export default function FounderJourneyPage() {
             </button>
             <button
               onClick={handleReset}
-              className="bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm transition-colors"
+              disabled={isResetting}
+              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm transition-colors"
               title="Debug: Reset all journey state"
             >
-              🗑️ Reset Journey
+              {isResetting ? '⏳ Resetting...' : '🗑️ Reset Journey'}
             </button>
           </div>
         )}
