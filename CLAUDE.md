@@ -206,6 +206,49 @@ export const memory = new Memory({
 
 **Note**: Memory system uses **Supabase PostgreSQL** with `@mastra/pg` PostgresStore for persistent, cloud-based memory across sessions.
 
+## 🧠 Workflow & Memory Architecture Review
+
+### Current State
+- **Flow**: Linear (start → assessment → profile → challenge → sprint)
+- **Memory**: Dual system (localStorage MemoryManager + PostgreSQL Mastra Memory)
+- **Branching**: ❌ None - same path for all founders
+- **Adaptive**: ❌ Static prompts - no learning from behavior
+- **Context**: ⚠️ Siloed - agents don't see full founder history
+
+### Known Issues & Improvements Needed
+
+**1. CRITICAL: Memory Systems Not Integrated**
+- `MemoryManager` (client-side localStorage) builds founder/startup context
+- Mastra Memory (PostgreSQL) stores conversation history
+- **Problem**: Agents don't see MemoryManager context!
+- **Fix**: Pass `MemoryManager.buildFullContext()` as system context to every agent call
+
+**2. HIGH: Missing Workflow Branching**
+- No different paths for Venture House vs Bootstrap House
+- No adaptation for technical vs business founders
+- **Needed**: Branch after house assignment → different OKRs, timelines, coaching styles
+
+**3. HIGH: No Adaptive Feedback Loops**
+- Static prompts don't learn from founder behavior
+- **Needed**: Track patterns (misses deadlines → easier OKRs, asks tech questions → more code examples)
+
+**4. MEDIUM: Dynamic Preferences Not Captured**
+- Missing: Communication frequency, learning style, available hours/week, feedback style
+- **Needed**: Ask + store preferences → personalize coaching cadence and style
+
+**5. LOW: Cross-Thread Context Not Shared**
+- Challenge phase coach doesn't see onboarding insights
+- Sprint mentor doesn't see challenge struggles
+- **Needed**: Aggregate insights across threads
+
+### Implementation Priority
+1. ✅ Add YC/Indie Hackers resources (done)
+2. ✅ Add Noam Wasserman + Cooley GO (done)
+3. 🚧 Integrate MemoryManager with agent calls (next)
+4. 🚧 Add Venture/Bootstrap branching (next)
+5. 📋 Implement adaptive feedback loops (future)
+6. 📋 Track dynamic preferences (future)
+
 ## 🔧 Key Environment Variables
 
 ### Required in `mobile-app/.env.local`:
