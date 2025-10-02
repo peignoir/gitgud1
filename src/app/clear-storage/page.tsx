@@ -118,6 +118,19 @@ export default function ClearStoragePage() {
       await new Promise(resolve => setTimeout(resolve, 500));
       setAllDone(true);
       console.log('✅ All cleanup completed!');
+
+      // Auto-redirect after cleanup (1 second delay to show completion)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Final check and force clear
+      const remaining = Object.keys(localStorage);
+      if (remaining.length > 0) {
+        console.warn('⚠️ Final clear before redirect:', remaining);
+        localStorage.clear();
+      }
+
+      console.log('🚀 Auto-redirecting to fresh journey...');
+      window.location.replace('/founder-journey');
     };
 
     runCleanup();
@@ -157,7 +170,7 @@ export default function ClearStoragePage() {
           </h1>
           <p className="text-gray-600">
             {allDone
-              ? 'Everything has been cleared. Ready for a fresh start!'
+              ? 'Everything cleared! Redirecting...'
               : 'Clearing all data and memory...'}
           </p>
         </div>
