@@ -164,6 +164,31 @@ Key features for real-time AI interactions:
 - **Streaming Endpoints**: `/api/founder-journey/stream` for journey phases
 - **Visual Feedback**: Animated indicators during AI processing
 
+### GPT-5 (V2 Models) Integration
+**IMPORTANT**: GPT-5 is fully supported by Mastra but requires special handling:
+
+```typescript
+// ✅ CORRECT: Use generateVNext() for GPT-5 (V2 models)
+const response = await agent.generateVNext(
+  [{ role: 'user', content: prompt }],
+  { memory: { resource: userId, thread: threadId } }
+);
+
+// ❌ WRONG: Don't use generate() - will throw error
+// Error: "V2 models are not supported for the current version of generate"
+```
+
+**Current GPT-5 Usage:**
+- **Coach Agent** (`coach.agent.ts`): GPT-5 with `reasoningEffort: 'low'` for fast chat responses
+- **Profiler Agent** (`profiler.agent.ts`): GPT-5 with `reasoningEffort: 'low'` for bio generation
+- **Other Agents**: GPT-4o for standard operations
+
+**Key Points:**
+- GPT-5 supports tools (web research, LinkedIn research, etc.)
+- Use `reasoningEffort: 'low'` for speed (default is 'medium')
+- Always check Mastra docs when debugging: https://mastra.ai/en/docs
+- V2 models = GPT-5 family in Mastra terminology
+
 ### Memory Configuration
 ```typescript
 // mobile-app/src/lib/mastra/config.ts
@@ -229,11 +254,14 @@ Run this in Supabase SQL Editor or enable via Database → Extensions → "vecto
 - 5-phase founder journey (Welcome → Profile → Challenge → Evaluation → Sprint)
 - 5 Mastra agents with specialized tools (LinkedIn research, web research, assessment)
 - **Mastra Memory with PostgreSQL**: All memory stored in Supabase, no Mem0 dependency
+- **GPT-5 Integration**: Using `generateVNext()` for V2 models (Coach & Profiler agents)
 - Google OAuth authentication with NextAuth
 - Dual-mode architecture (Mobile App + Terminal Console)
 - Terminal console with 4 agents (Scout, Analyst, Mentor, Scoring)
 - Command system with timer, routing, and flow visualization
 - Real-time streaming responses using Server-Sent Events
+- Memory storage from chat (auto-extracts user info during conversations)
+- Rockstar founder detection (AI-powered famous founder identification with red star badges)
 - **Production-ready**: Designed for Vercel deployment with Supabase backend
 
 ### Architecture Patterns:
@@ -246,11 +274,29 @@ Run this in Supabase SQL Editor or enable via Database → Extensions → "vecto
 
 ### Important Files to Understand:
 1. `mobile-app/src/app/founder-journey/page.tsx` - Main journey orchestrator with phase management
-2. `mobile-app/src/lib/workflows/founder-workflow.ts` - Mastra workflow with 5 steps
-3. `mobile-app/src/lib/mastra/config.ts` - Mastra configuration with PostgreSQL memory
-4. `mobile-app/src/lib/agents/*.agent.ts` - 5 specialized agents (researcher, profiler, coach, evaluator, mentor)
-5. `src/console/index.ts` - Terminal console entrypoint
-6. `src/console/agents/*.ts` - Console agents (scout, analyst, mentor, scoring)
+2. `mobile-app/src/app/api/founder-journey/stream/route.ts` - **CRITICAL**: Streaming API using `generateVNext()` for GPT-5
+3. `mobile-app/src/lib/workflows/founder-workflow.ts` - Mastra workflow with 5 steps
+4. `mobile-app/src/lib/mastra/config.ts` - Mastra configuration with PostgreSQL memory
+5. `mobile-app/src/lib/agents/*.agent.ts` - 5 specialized agents (researcher, profiler, coach, evaluator, mentor)
+6. `src/console/index.ts` - Terminal console entrypoint
+7. `src/console/agents/*.ts` - Console agents (scout, analyst, mentor, scoring)
+
+### Common Issues & Solutions:
+
+**Issue: "V2 models are not supported for the current version of generate"**
+- **Cause**: Using `agent.generate()` with GPT-5 (V2 model)
+- **Solution**: Use `agent.generateVNext()` instead
+- **Code**: See `/api/founder-journey/stream/route.ts` line 124
+
+**Issue: Empty responses from agents**
+- **Check**: Model type (GPT-5 requires `generateVNext()`, GPT-4o uses `generate()`)
+- **Check**: Vercel logs for actual error messages (build logs show warnings, runtime logs show errors)
+- **Check**: Mastra documentation for breaking changes
+
+**Issue: Timer only works when tab is visible**
+- **Cause**: Using `setInterval()` with state dependency (browsers throttle background tabs)
+- **Solution**: Use `Date.now()` calculation with fixed end time
+- **Code**: See `ChallengePhase.tsx` timer implementation
 
 ### Testing Approach:
 
