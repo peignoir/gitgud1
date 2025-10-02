@@ -279,23 +279,6 @@ export default function FounderJourneyPage() {
             />
           )}
         </div>
-
-        {/* Debug Panel (admin only) */}
-        {session?.user?.email === 'franck@recorp.co' && (
-          <div className="mt-8 bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-xs">
-            <div className="mb-2 text-gray-400">🔬 Debug Panel</div>
-            <div>Phase: {journeyState.currentPhase}</div>
-            <div>Data keys: {Object.keys(journeyState.data).join(', ')}</div>
-            <details className="mt-2">
-              <summary className="cursor-pointer text-gray-400 hover:text-green-400">
-                View full state
-              </summary>
-              <pre className="mt-2 text-xs overflow-auto max-h-64">
-                {JSON.stringify(journeyState.data, null, 2)}
-              </pre>
-            </details>
-          </div>
-        )}
       </div>
     </div>
   );
