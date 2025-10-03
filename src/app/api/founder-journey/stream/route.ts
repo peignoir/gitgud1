@@ -543,11 +543,11 @@ FOUNDER BIO (READ THIS):
 ${data.founderBio ? data.founderBio.substring(0, 400) : 'Technical founder'}
 
 INSTRUCTIONS:
-1. Start: "Hey ${data.founderName || 'there'}! 👋 Ready for the challenge?"
+1. Start: "Hey ${data.founderName || 'there'}! 👋 Back for another round."
 2. Acknowledge ONE thing from their bio (keep it real, no fake enthusiasm):
-   - If VC/investor/community builder: "You've evaluated tons of startups—let's see you ship one fast."
-   - If technical/engineer: "With your builder background, this should be fun—let's validate fast."
-   - If serial founder/exits: "You've been through this—let's make it count."
+   - If VC/investor/community builder: "As a VC/advisor and serial founder who scaled [their big company], you've got the eye for opportunities—now let's see if you can ship as fast as you evaluate; you've done this before, so let's move fast."
+   - If technical/engineer: "With your builder background, this should be natural—let's validate fast and ship something real."
+   - If serial founder/exits: "You've been through this before—let's make it count."
    - If first-timer: "Perfect time to prove you can ship—let's do this."
 3. Include these tools (one simple list - FREE ones first):
    - DeepSeek (FREE): https://chat.deepseek.com
@@ -555,7 +555,7 @@ INSTRUCTIONS:
    - Cursor: https://cursor.sh
    - v0.dev: https://v0.dev
    - Bolt.new: https://bolt.new
-4. End with: "What are we building? 1️⃣ New idea or 2️⃣ Add to existing project?"
+4. End with: "What are we building? If you don't know, I can give you some ideas—just ask..."
 
 Keep it SHORT (3-4 sentences max). Be authentic and helpful. Write it NOW—no research needed.`.trim();
         }
