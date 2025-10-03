@@ -90,25 +90,40 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
           // Build the prompt based on phase and data
           const prompt = buildPromptForPhase(phase, data, fullMemoryContext);
 
-          console.log('💬 Agent prompt:', { agent: agentName, promptLength: prompt.length });
+          // Build conversation history for the agent (convert from our format to OpenAI format)
+          const conversationHistory = data.conversationHistory || [];
+          const messages: any[] = conversationHistory.map((msg: any) => ({
+            role: msg.role === 'coach' ? 'assistant' : 'user',
+            content: msg.content,
+          }));
+
+          // Add current prompt as the latest message
+          messages.push({ role: 'user', content: prompt });
+
+          console.log('💬 Agent prompt:', {
+            agent: agentName,
+            promptLength: prompt.length,
+            conversationLength: conversationHistory.length,
+            totalMessages: messages.length
+          });
 
           // For agents with tools (profiler), use generate() then stream the result
           // For agents without tools, use stream() for real-time streaming
           console.log(`🤖 [Stream] Calling agent for ${agentName}...`);
-          
+
           if (agentName === 'profiler' || agentName === 'coach') {
             // Profiler and Coach use tools - must use generate() not stream()
             console.log(`📚 [${agentName}] Using generate() due to tool usage`);
             console.log(`📚 [${agentName}] Prompt preview:`, prompt.substring(0, 300));
-            console.log(`📚 [${agentName}] Memory params:`, { 
-              resource: userId, 
+            console.log(`📚 [${agentName}] Memory params:`, {
+              resource: userId,
               thread: `${phase}-${userId}`,
               hasAgent: !!agent,
-              agentName: agent?.name 
+              agentName: agent?.name
             });
-            
+
             try {
-              console.log(`📚 [${agentName}] Calling agent.generate() with maxSteps=5 for speed...`);
+              console.log(`📚 [${agentName}] Calling agent.stream() with conversation history (${messages.length} messages)...`);
               console.log(`📚 [${agentName}] Agent memory config:`, {
                 hasMemory: !!(agent as any).memory,
                 memoryType: (agent as any).memory?.constructor?.name,
@@ -116,10 +131,10 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
                 storageType: (agent as any).memory?.storage?.constructor?.name,
               });
               const startTime = Date.now();
-              
-              // Use regular stream() method for AI SDK v4 models
+
+              // Use regular stream() method with full conversation history
               const streamResult = await agent.stream(
-                [{ role: 'user', content: prompt }],
+                messages,
                 {
                   memory: {
                     resource: userId,
@@ -149,7 +164,7 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
           } else {
             // Other agents without tools can use real streaming
             const streamResponse = await agent.stream(
-              [{ role: 'user', content: prompt }],
+              messages,
               {
                 memory: {
                   resource: userId,
