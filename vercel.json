@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd mobile-app && npm run build",
+  "devCommand": "cd mobile-app && npm run dev",
+  "installCommand": "cd mobile-app && npm install",
+  "framework": "nextjs",
+  "outputDirectory": "mobile-app/.next"
+}
