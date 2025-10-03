@@ -507,32 +507,7 @@ export function ProfilePhase({ data, onNext }: ProfilePhaseProps) {
             ref={streamContainerRef}
             className="prose max-w-none text-lg leading-relaxed text-gray-900"
           >
-            {generatedBio || (
-              streaming ? (
-                <div className="text-center py-8 space-y-4">
-                  {/* Animated dots while waiting */}
-                  <div className="flex justify-center space-x-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <p className="text-blue-600 font-medium animate-pulse">
-                    Hang tight—I'm assembling your bio right now...
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center py-8 space-y-3">
-                  <div className="flex justify-center items-center space-x-2 mb-2">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <p className="text-purple-600 font-medium italic animate-pulse">
-                    wait a little while i finish making sense of your life...
-                  </p>
-                </div>
-              )
-            )}
+            {generatedBio || ''}
             {streaming && generatedBio && (
               <span className="inline-block w-2 h-5 bg-blue-600 animate-pulse ml-1" />
             )}
