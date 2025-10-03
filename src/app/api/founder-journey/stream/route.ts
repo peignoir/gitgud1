@@ -132,6 +132,9 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
               });
               const startTime = Date.now();
 
+              // Determine if this is a welcome message (no tools needed)
+              const isWelcome = phase === 'challenge' && data.challengeMode === 'start';
+
               // Use regular stream() method with full conversation history
               const streamResult = await agent.stream(
                 messages,
@@ -140,7 +143,7 @@ ${founderMemory ? `${founderMemory}\n\n` : ''}${startupMemory ? `${startupMemory
                     resource: userId,
                     thread: `${phase}-${userId}`, // Unique thread per phase
                   },
-                  maxSteps: 5, // Limit to 5 steps max (3 searches + 2 buffer) for speed
+                  maxSteps: isWelcome ? 1 : 5, // Welcome: no tools (1 step), Coaching: allow tools (5 steps)
                 }
               );
 
