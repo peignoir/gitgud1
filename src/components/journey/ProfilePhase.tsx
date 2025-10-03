@@ -463,7 +463,8 @@ export function ProfilePhase({ data, onNext }: ProfilePhaseProps) {
         </div>
       )}
 
-      {/* Generated Bio - ALWAYS SHOW to ensure indicators are visible */}
+      {/* Generated Bio - Only show when bio starts appearing or is complete */}
+      {(generatedBio || !streaming) && (
       <div className="bg-white rounded-2xl p-8 mb-8 border-2 border-gray-200 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
@@ -514,6 +515,7 @@ export function ProfilePhase({ data, onNext }: ProfilePhaseProps) {
           </div>
         )}
       </div>
+      )}
 
       {/* Continue Button */}
       {generatedBio && !streaming && (
