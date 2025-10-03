@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Fix workspace root warning - mobile-app is the root for this Next.js app
+  outputFileTracingRoot: undefined, // Don't trace outside mobile-app directory
+
   typescript: {
     ignoreBuildErrors: true
   },
