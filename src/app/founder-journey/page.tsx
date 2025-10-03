@@ -131,16 +131,10 @@ export default function FounderJourneyPage() {
       return;
     }
 
-    const confirmed = confirm('🚨 Reset all journey state and start fresh?\n\nThis will:\n• Clear all localStorage\n• Clear Mastra memory\n• Delete chat history\n• Reset timers\n\nClick OK to continue.');
-
-    if (confirmed) {
-      setIsResetting(true); // Lock to prevent double-click
-      console.log('🗑️ Reset confirmed, redirecting to cleanup...');
-      // Redirect immediately to cleanup page
-      window.location.replace('/clear-storage');
-    } else {
-      console.log('❌ Reset cancelled');
-    }
+    // Go straight to reset animation - no confirmation modal
+    setIsResetting(true); // Lock to prevent double-click
+    console.log('🗑️ Resetting journey...');
+    window.location.replace('/clear-storage');
   };
 
   // Show login screen if not authenticated
