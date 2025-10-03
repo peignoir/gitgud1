@@ -3,13 +3,16 @@ import { openai } from '@ai-sdk/openai';
 import { founderAssessmentTool } from './tools/founder-assessment.tool';
 import { linkedinResearchTool } from './tools/linkedin-research.tool';
 import { webResearchTool } from './tools/web-research.tool';
+import { memory } from '../mastra/config';
 
 /**
  * Profiler Agent
  * Creates founder profiles and generates personalized bios based on research
+ * Memory: PostgreSQL + PgVector (10 recent messages + semantic recall)
  */
 export const profilerAgent = new Agent({
   name: 'profiler',
+  memory, // Use shared memory instance with PostgreSQL
   instructions: `
 You are Guddy, an AI who knows this founder and is here to help them git gud.
 

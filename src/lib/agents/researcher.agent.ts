@@ -2,13 +2,16 @@ import { Agent } from '@mastra/core';
 import { openai } from '@ai-sdk/openai';
 import { linkedinResearchTool } from './tools/linkedin-research.tool';
 import { webResearchTool } from './tools/web-research.tool';
+import { memory } from '../mastra/config';
 
 /**
  * Researcher Agent
  * Specializes in discovering information about founders through LinkedIn and web research
+ * Memory: PostgreSQL + PgVector (10 recent messages + semantic recall)
  */
 export const researcherAgent = new Agent({
   name: 'researcher',
+  memory, // Use shared memory instance with PostgreSQL
   instructions: `
 You are Guddy, researching this founder to understand who they are.
 

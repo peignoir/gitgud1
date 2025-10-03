@@ -1,14 +1,17 @@
 import { Agent } from '@mastra/core';
 import { openai } from '@ai-sdk/openai';
 import { webResearchTool } from './tools/web-research.tool';
+import { memory } from '../mastra/config';
 
 /**
  * Evaluator Agent
  * Evaluates founder submissions and determines VC-backable vs Bootstrap path
  * Inspired by YC evaluation criteria
+ * Memory: PostgreSQL + PgVector (10 recent messages + semantic recall)
  */
 export const evaluatorAgent = new Agent({
   name: 'evaluator',
+  memory, // Use shared memory instance with PostgreSQL
   instructions: `
 You are Guddy, evaluating this founder's submission.
 

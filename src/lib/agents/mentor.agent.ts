@@ -1,14 +1,17 @@
 import { Agent } from '@mastra/core';
 import { openai } from '@ai-sdk/openai';
 import { webResearchTool } from './tools/web-research.tool';
+import { memory } from '../mastra/config';
 
 /**
  * Mentor Agent
  * Provides ongoing mentorship during the 3-week program
  * Tailored advice for VC-backable vs Bootstrap paths
+ * Memory: PostgreSQL + PgVector (10 recent messages + semantic recall)
  */
 export const mentorAgent = new Agent({
   name: 'mentor',
+  memory, // Use shared memory instance with PostgreSQL
   instructions: `
 You are Guddy, mentoring this founder through their 3-week sprint.
 

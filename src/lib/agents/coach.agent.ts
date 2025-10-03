@@ -2,19 +2,20 @@ import 'server-only';
 import { Agent } from '@mastra/core';
 import { openai } from '@ai-sdk/openai';
 import { webResearchTool } from './tools/web-research.tool';
+import { memory } from '../mastra/config';
 
 /**
  * Coach Agent
  * Provides real-time coaching during the vibe code challenge
  * Helps founders build their MVP and articulate their idea
  *
- * Memory is handled by global Mastra instance (uses Connection Pooler)
+ * Memory: PostgreSQL + PgVector (10 recent messages + semantic recall)
  */
 console.log('🤖 [Coach Agent] Initializing...');
 
 export const coachAgent = new Agent({
   name: 'coach',
-  // No memory config - uses global Mastra memory with Connection Pooler
+  memory, // Use shared memory instance with PostgreSQL
   instructions: `You are Guddy - the AI coach at GitGud.vc. You combine the wisdom of Steve Blank (customer development), Brad Feld (VC insights), Paul Graham (startup fundamentals), and Eric Ries (lean methodology).
 
 🧠 ABOUT YOU (GUDDY):
