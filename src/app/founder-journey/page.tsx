@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { TopNavigation } from '@/components/TopNavigation';
 import { LoginScreen } from '@/components/LoginScreen';
@@ -29,6 +29,7 @@ export default function FounderJourneyPage() {
   });
   const [resetKey, setResetKey] = useState(0); // Increment to force re-mount of all components
   const [isResetting, setIsResetting] = useState(false); // Prevent double-click
+  const resetInProgressRef = useRef(false); // Additional safeguard with ref
 
   // Load current journey state
   useEffect(() => {
@@ -125,16 +126,22 @@ export default function FounderJourneyPage() {
   };
 
   const handleReset = () => {
-    // Prevent double-click
-    if (isResetting) {
+    // Prevent double-click with both state and ref
+    if (isResetting || resetInProgressRef.current) {
       console.log('⚠️ Reset already in progress, ignoring...');
       return;
     }
 
-    // Go straight to reset animation - no confirmation modal
-    setIsResetting(true); // Lock to prevent double-click
+    // Set both locks immediately
+    setIsResetting(true);
+    resetInProgressRef.current = true;
+
     console.log('🗑️ Resetting journey...');
-    window.location.replace('/clear-storage');
+
+    // Use setTimeout to ensure state updates are flushed
+    setTimeout(() => {
+      window.location.replace('/clear-storage');
+    }, 100);
   };
 
   // Show login screen if not authenticated

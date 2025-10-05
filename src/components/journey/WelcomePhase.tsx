@@ -10,7 +10,7 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [urlError, setUrlError] = useState('');
   const [resumeText, setResumeText] = useState('');
-  const [showResumeInput, setShowResumeInput] = useState(false);
+  const [showResumeInput, setShowResumeInput] = useState(true); // Default open
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
   const [pdfError, setPdfError] = useState('');
 
@@ -282,33 +282,27 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
               </p>
             </div>
 
-            {/* Or Paste Text */}
-            <div className="text-center text-gray-500 font-medium">
-              — OR —
-            </div>
-
-            <textarea
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              placeholder="Paste your resume, LinkedIn export, or bio here...
-
-Example:
-John Smith
-Serial Entrepreneur | Ex-Google
-
-Currently building Acme Corp (2023-present), a SaaS platform with 10K users...
-
-Previously:
-- Co-founded TechStartup (2018-2022), acquired by BigCo for $5M
-- Product Manager at Google (2015-2018)
-- Computer Science @ MIT (2011-2015)"
-              className="w-full px-4 py-3 border-2 border-green-300 focus:border-green-500 rounded-lg focus:outline-none text-sm min-h-[200px] text-gray-900 placeholder-gray-500"
-            />
-
+            {/* Show extracted text (read-only preview) */}
             {resumeText && (
-              <p className="text-sm text-green-600 font-medium">
-                ✅ {resumeText.split('\n').length} lines | {resumeText.length} characters
-              </p>
+              <div className="mt-4">
+                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-green-900">✅ Resume Text Extracted</h4>
+                    <button
+                      onClick={() => setResumeText('')}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                    >
+                      ✕ Clear
+                    </button>
+                  </div>
+                  <div className="text-sm text-green-800 max-h-40 overflow-y-auto whitespace-pre-wrap font-mono bg-white p-3 rounded">
+                    {resumeText.substring(0, 500)}{resumeText.length > 500 ? '...' : ''}
+                  </div>
+                  <p className="text-xs text-green-700 mt-2">
+                    {resumeText.split('\n').length} lines | {resumeText.length} characters
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         )}
