@@ -10,9 +10,6 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [urlError, setUrlError] = useState('');
   const [resumeText, setResumeText] = useState('');
-  const [showResumeInput, setShowResumeInput] = useState(true); // Default open
-  const [isProcessingPdf, setIsProcessingPdf] = useState(false);
-  const [pdfError, setPdfError] = useState('');
 
   const validateLinkedInUrl = (url: string): boolean => {
     if (!url) return true; // Empty is OK (optional)
@@ -38,49 +35,6 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
     
     setUrlError('');
     return true;
-  };
-
-  const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (file.type !== 'application/pdf') {
-      setPdfError('Please upload a PDF file');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setPdfError('PDF file must be less than 5MB');
-      return;
-    }
-
-    setPdfError('');
-    setIsProcessingPdf(true);
-
-    try {
-      const formData = new FormData();
-      formData.append('pdf', file);
-
-      const response = await fetch('/api/extract-pdf', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to extract PDF text');
-      }
-
-      const { text } = await response.json();
-      setResumeText(text);
-      setPdfError('');
-    } catch (error) {
-      console.error('PDF extraction error:', error);
-      setPdfError('Failed to read PDF. Please try copying the text manually.');
-    } finally {
-      setIsProcessingPdf(false);
-    }
   };
 
   const handleStart = () => {
@@ -238,73 +192,45 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
         </p>
       </div>
 
-      {/* Resume/Bio Option */}
+      {/* Resume/Bio Option - Always Visible */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-8 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-gray-900">📄 Or Share Your Resume/Bio</h3>
-          <button
-            onClick={() => setShowResumeInput(!showResumeInput)}
-            className="text-green-600 hover:text-green-700 font-medium text-sm"
-          >
-            {showResumeInput ? '▼ Hide' : '▶ Show'}
-          </button>
+        <h3 className="text-xl font-bold text-gray-900 mb-4">📄 Or Paste Your Resume/Bio</h3>
+        <p className="text-gray-700 mb-4">
+          If you don't have LinkedIn or it's private, paste your resume or bio here. I'll use it to craft your founder profile.
+        </p>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-blue-900 mb-2">💡 How to get your LinkedIn text:</h4>
+          <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+            <li>Go to your LinkedIn profile</li>
+            <li>Click "More" → "Save to PDF"</li>
+            <li>Open the PDF and copy all the text</li>
+            <li>Paste it below</li>
+          </ol>
         </div>
 
-        {showResumeInput && (
-          <div className="space-y-4">
-            <p className="text-gray-700 mb-4">
-              If your LinkedIn is private or you don't have one, upload your resume PDF or paste your bio text here.
-            </p>
+        <textarea
+          value={resumeText}
+          onChange={(e) => setResumeText(e.target.value)}
+          placeholder="Paste your resume, LinkedIn export, or bio here...
 
-            {/* PDF Upload Button */}
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 mb-4">
-              <h4 className="font-semibold text-blue-900 mb-3">📄 Upload Resume PDF</h4>
-              <div className="flex items-center space-x-4">
-                <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors inline-block">
-                  <input
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    onChange={handlePdfUpload}
-                    className="hidden"
-                    disabled={isProcessingPdf}
-                  />
-                  {isProcessingPdf ? '⏳ Processing...' : '📎 Choose PDF File'}
-                </label>
-                {resumeText && !isProcessingPdf && (
-                  <span className="text-sm text-green-600 font-medium">✅ PDF loaded ({resumeText.length} chars)</span>
-                )}
-              </div>
-              {pdfError && (
-                <p className="text-sm text-red-600 mt-2">⚠️ {pdfError}</p>
-              )}
-              <p className="text-xs text-blue-700 mt-3">
-                💡 Or download LinkedIn as PDF: Profile → "More" → "Save to PDF" → Upload here
-              </p>
-            </div>
+Example:
+John Smith
+Serial Entrepreneur | Ex-Google
 
-            {/* Show extracted text (read-only preview) */}
-            {resumeText && (
-              <div className="mt-4">
-                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-green-900">✅ Resume Text Extracted</h4>
-                    <button
-                      onClick={() => setResumeText('')}
-                      className="text-red-600 hover:text-red-700 text-sm font-medium"
-                    >
-                      ✕ Clear
-                    </button>
-                  </div>
-                  <div className="text-sm text-green-800 max-h-40 overflow-y-auto whitespace-pre-wrap font-mono bg-white p-3 rounded">
-                    {resumeText.substring(0, 500)}{resumeText.length > 500 ? '...' : ''}
-                  </div>
-                  <p className="text-xs text-green-700 mt-2">
-                    {resumeText.split('\n').length} lines | {resumeText.length} characters
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+Currently building Acme Corp (2023-present), a SaaS platform with 10K users...
+
+Previously:
+- Co-founded TechStartup (2018-2022), acquired by BigCo for $5M
+- Product Manager at Google (2015-2018)
+- Computer Science @ MIT (2011-2015)"
+          className="w-full px-4 py-3 border-2 border-green-300 focus:border-green-500 rounded-lg focus:outline-none text-sm min-h-[200px] text-gray-900 placeholder-gray-500"
+        />
+
+        {resumeText && (
+          <p className="text-sm text-green-600 font-medium mt-2">
+            ✅ {resumeText.split('\n').length} lines | {resumeText.length} characters
+          </p>
         )}
       </div>
 
