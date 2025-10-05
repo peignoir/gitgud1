@@ -11,6 +11,8 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
   const [urlError, setUrlError] = useState('');
   const [resumeText, setResumeText] = useState('');
   const [showResumeInput, setShowResumeInput] = useState(false);
+  const [isProcessingPdf, setIsProcessingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState('');
 
   const validateLinkedInUrl = (url: string): boolean => {
     if (!url) return true; // Empty is OK (optional)
@@ -36,6 +38,49 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
     
     setUrlError('');
     return true;
+  };
+
+  const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      setPdfError('Please upload a PDF file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setPdfError('PDF file must be less than 5MB');
+      return;
+    }
+
+    setPdfError('');
+    setIsProcessingPdf(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      const response = await fetch('/api/extract-pdf', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to extract PDF text');
+      }
+
+      const { text } = await response.json();
+      setResumeText(text);
+      setPdfError('');
+    } catch (error) {
+      console.error('PDF extraction error:', error);
+      setPdfError('Failed to read PDF. Please try copying the text manually.');
+    } finally {
+      setIsProcessingPdf(false);
+    }
   };
 
   const handleStart = () => {
@@ -208,21 +253,38 @@ export function WelcomePhase({ onNext }: WelcomePhaseProps) {
         {showResumeInput && (
           <div className="space-y-4">
             <p className="text-gray-700 mb-4">
-              If your LinkedIn is private or you don't have one, paste your resume or bio text here.
-              I'll use this to craft your founder profile.
+              If your LinkedIn is private or you don't have one, upload your resume PDF or paste your bio text here.
             </p>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <h4 className="font-semibold text-blue-900 mb-2">📝 How to get your LinkedIn data:</h4>
-              <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
-                <li>Go to your LinkedIn profile</li>
-                <li>Click "More" → "Save to PDF"</li>
-                <li>Open the PDF and copy all the text</li>
-                <li>Paste it below</li>
-              </ol>
+            {/* PDF Upload Button */}
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 mb-4">
+              <h4 className="font-semibold text-blue-900 mb-3">📄 Upload Resume PDF</h4>
+              <div className="flex items-center space-x-4">
+                <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors inline-block">
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={handlePdfUpload}
+                    className="hidden"
+                    disabled={isProcessingPdf}
+                  />
+                  {isProcessingPdf ? '⏳ Processing...' : '📎 Choose PDF File'}
+                </label>
+                {resumeText && !isProcessingPdf && (
+                  <span className="text-sm text-green-600 font-medium">✅ PDF loaded ({resumeText.length} chars)</span>
+                )}
+              </div>
+              {pdfError && (
+                <p className="text-sm text-red-600 mt-2">⚠️ {pdfError}</p>
+              )}
               <p className="text-xs text-blue-700 mt-3">
-                💡 Or just paste your resume, bio, or any text about your background, companies, and achievements!
+                💡 Or download LinkedIn as PDF: Profile → "More" → "Save to PDF" → Upload here
               </p>
+            </div>
+
+            {/* Or Paste Text */}
+            <div className="text-center text-gray-500 font-medium">
+              — OR —
             </div>
 
             <textarea
